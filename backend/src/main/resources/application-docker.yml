@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/wish_manager
+    username: wish_manager
+    password: wish_manager_password
+  
+  jpa:
+    show-sql: false
+  
+logging:
+  level:
+    com.wishmanager: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: INFO

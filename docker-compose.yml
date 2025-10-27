@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: wish-manager-postgres
+    environment:
+      POSTGRES_DB: wish_manager
+      POSTGRES_USER: wish_manager
+      POSTGRES_PASSWORD: wish_manager_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - wish-manager-network
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    container_name: wish-manager-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/wish_manager
+      SPRING_DATASOURCE_USERNAME: wish_manager
+      SPRING_DATASOURCE_PASSWORD: wish_manager_password
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - wish-manager-network
+
+  # Web App Frontend
+  web-app:
+    build:
+      context: .
+      dockerfile: docker/frontend/web-app/Dockerfile
+    container_name: wish-manager-web-app
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - wish-manager-network
+
+  # Mini App Frontend
+  mini-app:
+    build:
+      context: .
+      dockerfile: docker/frontend/mini-app/Dockerfile
+    container_name: wish-manager-mini-app
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    networks:
+      - wish-manager-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: wish-manager-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - backend
+      - web-app
+      - mini-app
+    networks:
+      - wish-manager-network
+
+volumes:
+  postgres_data:
+
+networks:
+  wish-manager-network:
+    driver: bridge
