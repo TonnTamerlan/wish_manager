@@ -7,10 +7,11 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY frontend/web-app/package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies (including devDependencies needed for build)
+RUN npm ci
 
-# Copy source code
+# Copy source code and config
+COPY frontend/web-app/tsconfig.json ./
 COPY frontend/web-app/src ./src
 COPY frontend/web-app/public ./public
 

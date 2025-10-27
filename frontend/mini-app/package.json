@@ -24,8 +24,7 @@
     "react-query": "^3.39.3",
     "react-hook-form": "^7.43.0",
     "@hookform/resolvers": "^2.9.11",
-    "yup": "^1.0.2",
-    "@twa-dev/sdk": "^0.1.0"
+    "yup": "^1.0.2"
   },
   "scripts": {
     "start": "react-scripts start",
